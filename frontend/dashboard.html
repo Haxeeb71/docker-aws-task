@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .add-form { display: flex; gap: 10px; margin-bottom: 20px; }
+        .add-form input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .add-form button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .add-form button:hover { background-color: #0056b3; }
+        ul { list-style: none; padding: 0; }
+        li { background: #e9ecef; margin: 10px 0; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+        .delete-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background-color: #c82333; }
+        .logout-btn { margin-top: 20px; text-align: center; }
+        .logout-btn a { color: #dc3545; text-decoration: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grocery List</h2>
+        
+        <form class="add-form" id="addForm">
+            <input type="text" id="groceryName" placeholder="Enter item name..." required>
+            <button type="submit">Add Grocery</button>
+        </form>
+
+        <ul id="groceryList">
+            <!-- Items injected by JS -->
+        </ul>
+        
+        <div class="logout-btn">
+            <a href="#" id="logoutLink">Logout</a>
+        </div>
+    </div>
+
+    <script>
+        if (sessionStorage.getItem('loggedIn') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('loggedIn');
+            window.location.href = 'index.html';
+        });
+
+        async function fetchGroceries() {
+            const list = document.getElementById('groceryList');
+            list.innerHTML = '<li>Loading...</li>';
+            
+            try {
+                const response = await fetch('/api/groceries');
+                const groceries = await response.json();
+                
+                list.innerHTML = '';
+                if (groceries.length === 0) {
+                    list.innerHTML = '<li>No items found.</li>';
+                }
+                
+                groceries.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${item.name}</span>
+                        <button class="delete-btn" onclick="deleteGrocery(${item.id})">Delete</button>
+                    `;
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                console.error('Error fetching groceries:', err);
+                list.innerHTML = '<li>Error loading items.</li>';
+            }
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('groceryName');
+            const name = input.value;
+            
+            try {
+                const response = await fetch('/api/groceries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    fetchGroceries();
+                } else {
+                    alert('Error adding item.');
+                }
+            } catch (err) {
+                console.error('Error adding grocery:', err);
+            }
+        });
+
+        async function deleteGrocery(id) {
+            try {
+                const response = await fetch(`/api/groceries/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    fetchGroceries();
+                } else {
+                    alert('Error deleting item.');
+                }
+            } catch (err) {
+                console.error('Error deleting grocery:', err);
+            }
+        }
+
+        // Initial load
+        fetchGroceries();
+    </script>
+</body>
+</html>

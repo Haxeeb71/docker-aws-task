@@ -1,0 +1,29 @@
+{
+  "family": "docker-aws-task-family",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "REPLACE_ME_ECR_URI",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "DB_HOST", "value": "your-rds-endpoint.aws.com" },
+        { "name": "DB_USER", "value": "your_db_username" },
+        { "name": "DB_PASSWORD", "value": "your_db_password" },
+        { "name": "DB_NAME", "value": "your_db_name" }
+      ],
+      "cpu": 256,
+      "memory": 512
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ]
+}
