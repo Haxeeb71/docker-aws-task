@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - main
-    # Only run if there are changes in the docker-aws-task directory
-    paths:
-      - 'docker-aws-task/**'
-      - '.github/workflows/deploy.yml'
+    paths-ignore:
+      - 'README.md'
 
 env:
   AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
@@ -46,7 +44,6 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
-      working-directory: docker-aws-task
       run: |
         # Build a docker container and
         # push it to ECR so that it can
