@@ -106,6 +106,42 @@ app.delete('/api/groceries/:id', async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+async function initializeDatabase() {
+    try {
+        console.log('Initializing database tables...');
+        await executeQuery(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(50) NOT NULL
+            )
+        `);
+        await executeQuery(`
+            CREATE TABLE IF NOT EXISTS groceries (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL
+            )
+        `);
+        // Insert default user safely
+        try {
+            await executeQuery("INSERT IGNORE INTO users (username, password) VALUES ('admin', 'password')");
+        } catch (e) {
+            console.log("Admin user insert skipped (might exist).");
+        }
+        // Insert default groceries if empty
+        const groceries = await executeQuery('SELECT COUNT(*) as count FROM groceries');
+        if (Number(groceries[0].count) === 0) {
+            await executeQuery("INSERT INTO groceries (name) VALUES ('Milk');");
+            await executeQuery("INSERT INTO groceries (name) VALUES ('Bread');");
+        }
+        
+        console.log('Database initialization complete.');
+    } catch (err) {
+        console.error('Failed to initialize database:', err);
+    }
+}
+
+app.listen(PORT, async () => {
     console.log(`Node app is running on port ${PORT}`);
+    await initializeDatabase();
 });
