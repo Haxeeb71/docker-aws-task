@@ -4,7 +4,7 @@
   "containerDefinitions": [
     {
       "name": "app",
-      "image": "REPLACE_ME_ECR_URI",
+      "image": "559198857091.dkr.ecr.us-east-1.amazonaws.com/docker-aws-task",
       "essential": true,
       "portMappings": [
         {
@@ -14,10 +14,10 @@
         }
       ],
       "environment": [
-        { "name": "DB_HOST", "value": "your-rds-endpoint.aws.com" },
-        { "name": "DB_USER", "value": "your_db_username" },
-        { "name": "DB_PASSWORD", "value": "your_db_password" },
-        { "name": "DB_NAME", "value": "your_db_name" }
+        { "name": "DB_HOST", "value": "database-1.cm5002au0xsb.us-east-1.rds.amazonaws.com" },
+        { "name": "DB_USER", "value": "admin" },
+        { "name": "DB_PASSWORD", "value": "mariadb11" },
+        { "name": "DB_NAME", "value": "database-1" }
       ],
       "cpu": 256,
       "memory": 512
